@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div id="game" class="grid gap-1"></div>
+    <div id="game" class="grid gap-2"></div>
     <script>
 const GRID_SIZE = 10; // 10x10 grid
 const MINE_COUNT = 15; // Number of mines
@@ -123,8 +123,8 @@ function checkWin() {
 
 function renderBoard() {
     const gameDiv = document.getElementById('game');
-    gameDiv.style.gridTemplateRows = `repeat(${GRID_SIZE}, 30px)`;
-    gameDiv.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 30px)`;
+    gameDiv.style.gridTemplateRows = `repeat(${GRID_SIZE}, 40px)`;
+    gameDiv.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 40px)`;
 
     for (let row = 0; row < GRID_SIZE; row++) {
         for (let col = 0; col < GRID_SIZE; col++) {
