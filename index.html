@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div id="game" class="grid gap-1"></div>
+    <script>
+const GRID_SIZE = 10; // 10x10 grid
+const MINE_COUNT = 15; // Number of mines
+
+let board = [];
+let revealed = [];
+let flagged = [];
+let gameOver = false;
+
+function createBoard() {
+    board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+    revealed = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+    flagged = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+
+    // Place mines randomly
+    let minesPlaced = 0;
+    while (minesPlaced < MINE_COUNT) {
+        const row = Math.floor(Math.random() * GRID_SIZE);
+        const col = Math.floor(Math.random() * GRID_SIZE);
+        if (board[row][col] !== -1) {
+            board[row][col] = -1;
+            minesPlaced++;
+        }
+    }
+
+    // Calculate numbers around mines
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            if (board[row][col] === -1) continue;
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    const newRow = row + i;
+                    const newCol = col + j;
+                    if (newRow >= 0 && newRow < GRID_SIZE && newCol >= 0 && newCol < GRID_SIZE && board[newRow][newCol] === -1) {
+                        count++;
+                    }
+                }
+            }
+            board[row][col] = count;
+        }
+    }
+}
+
+function revealCell(row, col) {
+    if (gameOver || revealed[row][col] || flagged[row][col]) return;
+
+    revealed[row][col] = true;
+    const cell = document.getElementById(`cell-${row}-${col}`);
+    cell.classList.add('bg-white');
+
+    if (board[row][col] === -1) {
+        cell.textContent = '💣';
+        gameOver = true;
+        alert('Game Over! You hit a mine.');
+        revealAllMines();
+    } else if (board[row][col] === 0) {
+        cell.textContent = '';
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                const newRow = row + i;
+                const newCol = col + j;
+                if (newRow >= 0 && newRow < GRID_SIZE && newCol >= 0 && newCol < GRID_SIZE) {
+                    revealCell(newRow, newCol);
+                }
+            }
+        }
+    } else {
+        cell.textContent = board[row][col];
+    }
+
+    checkWin();
+}
+
+function flagCell(row, col) {
+    if (gameOver || revealed[row][col]) return;
+
+    flagged[row][col] = !flagged[row][col];
+    const cell = document.getElementById(`cell-${row}-${col}`);
+    if (flagged[row][col]) {
+        cell.textContent = '🚩';
+    } else {
+        cell.textContent = '';
+    }
+}
+
+function revealAllMines() {
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            if (board[row][col] === -1) {
+                const cell = document.getElementById(`cell-${row}-${col}`);
+                cell.textContent = '💣';
+                cell.classList.add('bg-red-500');
+            }
+        }
+    }
+}
+
+function checkWin() {
+    let cellsLeft = GRID_SIZE * GRID_SIZE;
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            if (revealed[row][col] || flagged[row][col]) {
+                cellsLeft--;
+            }
+        }
+    }
+    if (cellsLeft === MINE_COUNT) {
+        gameOver = true;
+        alert('Congratulations! You won!');
+    }
+}
+
+function renderBoard() {
+    const gameDiv = document.getElementById('game');
+    gameDiv.style.gridTemplateRows = `repeat(${GRID_SIZE}, 30px)`;
+    gameDiv.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 30px)`;
+
+    for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+            const cell = document.createElement('div');
+            cell.id = `cell-${row}-${col}`;
+            cell.classList.add('border', 'border-gray-300', 'w-full', 'h-full', 'flex', 'items-center', 'justify-center', 'cursor-pointer');
+            cell.addEventListener('click', () => revealCell(row, col));
+            cell.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                flagCell(row, col);
+            });
+            gameDiv.appendChild(cell);
+        }
+    }
+}
+
+createBoard();
+renderBoard();
+    </script>
+</body>
+</html>
